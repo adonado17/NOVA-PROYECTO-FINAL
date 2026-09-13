@@ -4,11 +4,11 @@ Proyecto final del Módulo I de HTML y CSS.
 
 ## Idea de negocio
 
-NOVA Studio es una propuesta de centro de bienestar y estética que ofrece servicios de cuidado facial, corporal y relajación en un ambiente tranquilo y cómodo.
+NOVA Studio es una propuesta de centro de bienestar y estética enfocada en servicios de cuidado facial, corporal y relajación dentro de un ambiente tranquilo y cómodo.
 
 ## Objetivo
 
-Crear una página web responsive que presente la idea de negocio, sus principales servicios, beneficios y una sección de contacto.
+Desarrollar una página web responsive que presente la idea de negocio, sus principales servicios, beneficios y medios de contacto.
 
 ## Tecnologías utilizadas
 
@@ -41,12 +41,10 @@ NOVA-PROYECTO-FINAL/
     └── favicon.svg
 ```
 
-Las imágenes de contenido utilizadas en la página se cargan desde enlaces externos.
-
 ## Cómo visualizar el proyecto
 
-Descargar o clonar el repositorio y abrir el archivo `index.html` en el navegador.
+Clonar o descargar el repositorio y abrir el archivo `index.html` en el navegador.
 
 ## Autor
 
-Sebasjuve
+Andres
