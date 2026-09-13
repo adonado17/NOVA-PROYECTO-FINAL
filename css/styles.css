@@ -395,3 +395,22 @@ footer {
     gap: 10px;
   }
 }
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 480px) {
+  .container {
+    width: 92%;
+  }
+
+  h1 {
+    font-size: 2.25rem;
+  }
+
+  .hero-image img {
+    height: 340px;
+  }
+
+  .contact-form {
+    padding: 22px;
+  }
+}
