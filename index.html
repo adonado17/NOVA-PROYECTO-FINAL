@@ -13,7 +13,7 @@
     <div class="container nav-container">
       <a href="#inicio" class="logo">NOVA <span>Studio</span></a>
 
-      <nav>
+      <nav aria-label="Navegación principal">
         <a href="#inicio">Inicio</a>
         <a href="#nosotros">Nosotros</a>
         <a href="#servicios">Servicios</a>
@@ -71,7 +71,7 @@
 
         <div class="services-grid">
           <article class="service-card">
-            <img src="https://images.unsplash.com/photo-1757689373248-a6cd07328ba5?auto=format&fit=crop&w=700&q=80" alt="Limpieza facial">
+            <img src="https://images.unsplash.com/photo-1757689373248-a6cd07328ba5?auto=format&fit=crop&w=700&q=80" alt="Limpieza facial" loading="lazy">
             <div class="service-info">
               <h3>Limpieza facial</h3>
               <p>Limpieza de la piel para retirar impurezas y mejorar su apariencia.</p>
@@ -79,7 +79,7 @@
           </article>
 
           <article class="service-card">
-            <img src="https://images.unsplash.com/photo-1761718210089-ba3bb5ccb54f?auto=format&fit=crop&w=700&q=80" alt="Hidratación facial">
+            <img src="https://images.unsplash.com/photo-1761718210089-ba3bb5ccb54f?auto=format&fit=crop&w=700&q=80" alt="Hidratación facial" loading="lazy">
             <div class="service-info">
               <h3>Hidratación facial</h3>
               <p>Tratamiento pensado para aportar suavidad e hidratación a la piel.</p>
@@ -87,7 +87,7 @@
           </article>
 
           <article class="service-card">
-            <img src="https://images.unsplash.com/photo-1731355774353-4131a8e13e55?auto=format&fit=crop&w=700&q=80" alt="Masaje relajante">
+            <img src="https://images.unsplash.com/photo-1731355774353-4131a8e13e55?auto=format&fit=crop&w=700&q=80" alt="Masaje relajante" loading="lazy">
             <div class="service-info">
               <h3>Masaje relajante</h3>
               <p>Sesión para disminuir la tensión y disfrutar un momento de descanso.</p>
@@ -95,7 +95,7 @@
           </article>
 
           <article class="service-card">
-            <img src="https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&fit=crop&w=700&q=80" alt="Cuidado corporal">
+            <img src="https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&fit=crop&w=700&q=80" alt="Cuidado corporal" loading="lazy">
             <div class="service-info">
               <h3>Cuidado corporal</h3>
               <p>Rutinas de cuidado orientadas al bienestar y la apariencia de la piel.</p>
@@ -156,10 +156,10 @@
 
         <form class="contact-form" action="#" method="post">
           <label for="nombre">Nombre</label>
-          <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
+          <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" autocomplete="name" required>
 
           <label for="correo">Correo</label>
-          <input type="email" id="correo" name="correo" placeholder="correo@ejemplo.com" required>
+          <input type="email" id="correo" name="correo" placeholder="correo@ejemplo.com" autocomplete="email" required>
 
           <label for="servicio">Servicio</label>
           <select id="servicio" name="servicio">
