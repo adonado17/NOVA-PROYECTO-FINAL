@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NOVA Studio, centro de bienestar y estética.">
+  <title>NOVA Studio</title>
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header>
+    <div class="container nav-container">
+      <a href="#inicio" class="logo">NOVA <span>Studio</span></a>
+
+      <nav>
+        <a href="#inicio">Inicio</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#servicios">Servicios</a>
+        <a href="#beneficios">Beneficios</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div class="container hero-content">
+        <div class="hero-text">
+          <p class="subtitle">Bienestar y cuidado personal</p>
+          <h1>Un espacio para sentirte bien contigo.</h1>
+          <p>
+            En NOVA Studio ofrecemos servicios de estética y relajación en un ambiente
+            tranquilo, cómodo y pensado para tu bienestar.
+          </p>
+          <a href="#servicios" class="button">Conoce nuestros servicios</a>
+        </div>
+
+        <div class="hero-image">
+          <img src="img/hero-spa.jpg" alt="Tratamiento facial en NOVA Studio">
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="nosotros">
+      <div class="container about-content">
+        <div>
+          <p class="subtitle">Sobre nosotros</p>
+          <h2>Cuidado personal en un ambiente tranquilo</h2>
+        </div>
+
+        <div class="about-text">
+          <p>
+            NOVA Studio es una idea de negocio enfocada en ofrecer servicios de estética y
+            bienestar para personas que buscan dedicar tiempo a su cuidado personal.
+          </p>
+          <p>
+            Nuestra propuesta combina atención cercana, espacios agradables y servicios
+            sencillos que se pueden adaptar a las necesidades de cada cliente.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section services-section" id="servicios">
+      <div class="container">
+        <div class="section-title">
+          <p class="subtitle">Servicios</p>
+          <h2>Lo que puedes encontrar en NOVA Studio</h2>
+        </div>
+
+        <div class="services-grid">
+          <article class="service-card">
+            <img src="img/servicio-limpieza-facial.jpg" alt="Limpieza facial">
+            <div class="service-info">
+              <h3>Limpieza facial</h3>
+              <p>Limpieza de la piel para retirar impurezas y mejorar su apariencia.</p>
+            </div>
+          </article>
+
+          <article class="service-card">
+            <img src="img/servicio-hidratacion-facial.jpg" alt="Hidratación facial">
+            <div class="service-info">
+              <h3>Hidratación facial</h3>
+              <p>Tratamiento pensado para aportar suavidad e hidratación a la piel.</p>
+            </div>
+          </article>
+
+          <article class="service-card">
+            <img src="img/servicio-masaje-relajante.jpg" alt="Masaje relajante">
+            <div class="service-info">
+              <h3>Masaje relajante</h3>
+              <p>Sesión para disminuir la tensión y disfrutar un momento de descanso.</p>
+            </div>
+          </article>
+
+          <article class="service-card">
+            <img src="img/servicio-cuidado-corporal.jpg" alt="Cuidado corporal">
+            <div class="service-info">
+              <h3>Cuidado corporal</h3>
+              <p>Rutinas de cuidado orientadas al bienestar y la apariencia de la piel.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="beneficios">
+      <div class="container">
+        <div class="section-title">
+          <p class="subtitle">Beneficios</p>
+          <h2>¿Por qué elegirnos?</h2>
+        </div>
+
+        <div class="benefits-grid">
+          <div class="benefit">
+            <span>01</span>
+            <h3>Atención personalizada</h3>
+            <p>Escuchamos lo que necesitas antes de recomendar un servicio.</p>
+          </div>
+
+          <div class="benefit">
+            <span>02</span>
+            <h3>Ambiente cómodo</h3>
+            <p>Un espacio limpio y tranquilo para desconectarte de la rutina.</p>
+          </div>
+
+          <div class="benefit">
+            <span>03</span>
+            <h3>Servicios variados</h3>
+            <p>Diferentes opciones de cuidado facial, corporal y relajación.</p>
+          </div>
+
+          <div class="benefit">
+            <span>04</span>
+            <h3>Acompañamiento</h3>
+            <p>Te explicamos el servicio y las recomendaciones básicas de cuidado.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section contact-section" id="contacto">
+      <div class="container contact-content">
+        <div class="contact-text">
+          <p class="subtitle">Contacto</p>
+          <h2>Agenda tu cita</h2>
+          <p>
+            Déjanos tus datos y cuéntanos qué servicio te interesa. Nos pondremos en
+            contacto contigo para confirmar la disponibilidad.
+          </p>
+          <p><strong>Teléfono:</strong> +57 300 123 4567</p>
+          <p><strong>Correo:</strong> contacto@novastudio.com</p>
+          <p><strong>Ciudad:</strong> Barranquilla, Colombia</p>
+        </div>
+
+        <form class="contact-form" action="#" method="post">
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
+
+          <label for="correo">Correo</label>
+          <input type="email" id="correo" name="correo" placeholder="correo@ejemplo.com" required>
+
+          <label for="servicio">Servicio</label>
+          <select id="servicio" name="servicio">
+            <option value="">Selecciona una opción</option>
+            <option value="limpieza">Limpieza facial</option>
+            <option value="hidratacion">Hidratación facial</option>
+            <option value="masaje">Masaje relajante</option>
+            <option value="corporal">Cuidado corporal</option>
+          </select>
+
+          <label for="mensaje">Mensaje</label>
+          <textarea id="mensaje" name="mensaje" rows="4" placeholder="Escribe tu mensaje"></textarea>
+
+          <button type="submit">Enviar</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-content">
+      <div>
+        <a href="#inicio" class="logo footer-logo">NOVA <span>Studio</span></a>
+        <p>Bienestar, estética y cuidado personal.</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="#nosotros">Nosotros</a>
+        <a href="#servicios">Servicios</a>
+        <a href="#beneficios">Beneficios</a>
+        <a href="#contacto">Contacto</a>
+      </div>
+    </div>
+
+    <div class="container copyright">
+      <p>© 2026 NOVA Studio. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+</body>
+</html>
