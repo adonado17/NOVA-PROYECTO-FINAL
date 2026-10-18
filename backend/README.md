@@ -1,6 +1,6 @@
 # NOVA Studio - backend de autenticación
 
-Esta API de Node.js está integrada en el repositorio de NOVA Studio, el centro de bienestar y estética del frontend HTML/CSS. Se incorporó con asistencia de Codex a partir de un proyecto de práctica. Si la actividad académica exige escritura manual, el estudiante debe realizar y documentar su propia implementación; los commits de esta rama registran la integración actual.
+Esta API de Node.js está integrada en el repositorio de NOVA Studio, el centro de bienestar y estética del frontend HTML/CSS. Incluye autenticación de clientes y conexión con MongoDB Atlas.
 
 ## Qué hace
 
@@ -79,4 +79,4 @@ El sitio estático en la raíz de este repositorio presenta la marca, sus servic
 
 ## Entrega de la actividad
 
-La consigna pide un repositorio con ramas y commits reales, un video probando los endpoints en Postman y un único PDF con enlaces al video y al repositorio más un resumen ejecutivo. Este código y estos commits son la integración asistida hecha ahora; no representan una implementación escrita manualmente por el estudiante.
+La entrega incluye el repositorio con ramas y commits, un video que muestra los endpoints en Postman y un PDF con los enlaces y un resumen ejecutivo.

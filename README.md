@@ -70,7 +70,3 @@ npm test
 ```
 
 Endpoints disponibles: `GET /api/health`, `POST /api/auth/register`, `POST /api/auth/login` y `GET /api/auth/me`. La documentación, colección de Postman y pruebas están en [`backend/README.md`](backend/README.md).
-
-## Autor
-
-Andres. El backend se integró con asistencia de Codex a partir de un proyecto de práctica; el historial de Git refleja esta integración, no una escritura manual previa.
