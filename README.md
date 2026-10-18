@@ -37,14 +37,40 @@ NOVA-PROYECTO-FINAL/
 ├── .gitignore
 ├── css/
 │   └── styles.css
-└── img/
-    └── favicon.svg
+├── img/
+│   └── favicon.svg
+└── backend/
+    ├── src/
+    ├── test/
+    ├── postman/
+    ├── package.json
+    └── README.md
 ```
 
-## Cómo visualizar el proyecto
+## Cómo visualizar el frontend
 
 Clonar o descargar el repositorio y abrir el archivo `index.html` en el navegador.
 
+## Backend de autenticación
+
+La carpeta [`backend/`](backend/) contiene una API con Express y MongoDB Atlas. Permite registrar clientes, iniciar sesión y consultar el perfil mediante un token JWT. El frontend HTML/CSS todavía no consume esta API.
+
+Para ejecutarla desde `backend/`:
+
+```powershell
+npm ci
+Copy-Item .env.example .env
+```
+
+Configura `MONGODB_URI` y un `JWT_SECRET` de al menos 32 caracteres en `.env`. Ese archivo es privado y está excluido de Git. Después:
+
+```powershell
+npm start
+npm test
+```
+
+Endpoints disponibles: `GET /api/health`, `POST /api/auth/register`, `POST /api/auth/login` y `GET /api/auth/me`. La documentación, colección de Postman y pruebas están en [`backend/README.md`](backend/README.md).
+
 ## Autor
 
-Andres
+Andres. El backend se integró con asistencia de Codex a partir de un proyecto de práctica; el historial de Git refleja esta integración, no una escritura manual previa.

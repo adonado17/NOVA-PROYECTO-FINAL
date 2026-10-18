@@ -1,0 +1,87 @@
+{
+  "info": {
+    "name": "NOVA Studio - API de practica",
+    "description": "Coleccion para demostrar conexion, registro, validacion, inicio de sesion y JWT. El registro valido crea un correo nuevo en cada ejecucion.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "demoEmail", "value": "cliente.nova@example.com" },
+    { "key": "demoPassword", "value": "Clave12345" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01 - Estado de la API y MongoDB",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/health" },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('API y base conectadas', function () {", "  pm.response.to.have.status(200);", "  pm.expect(pm.response.json().database).to.eql('connected');", "});"] } }]
+    },
+    {
+      "name": "02 - Registro invalido (validaciones)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"A\",\n  \"email\": \"correo-invalido\",\n  \"password\": \"123\"\n}" },
+        "url": "{{baseUrl}}/api/auth/register"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Datos invalidos rechazados', function () {", "  pm.response.to.have.status(422);", "  pm.expect(pm.response.json().errors.length).to.be.above(0);", "});"] } }]
+    },
+    {
+      "name": "03 - Registro valido",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Cliente NOVA\",\n  \"email\": \"{{demoEmail}}\",\n  \"password\": \"{{demoPassword}}\"\n}" },
+        "url": "{{baseUrl}}/api/auth/register"
+      },
+      "event": [
+        { "listen": "prerequest", "script": { "exec": ["pm.collectionVariables.set('demoEmail', 'cliente.nova.' + Date.now() + '@example.com');"] } },
+        { "listen": "test", "script": { "exec": ["pm.test('Usuario creado', function () {", "  pm.response.to.have.status(201);", "  pm.expect(pm.response.json().user.email).to.eql(pm.collectionVariables.get('demoEmail'));", "  pm.collectionVariables.set('token', pm.response.json().token);", "});"] } }
+      ]
+    },
+    {
+      "name": "04 - Correo duplicado",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Otro cliente\",\n  \"email\": \"{{demoEmail}}\",\n  \"password\": \"{{demoPassword}}\"\n}" },
+        "url": "{{baseUrl}}/api/auth/register"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Duplicado rechazado', function () {", "  pm.response.to.have.status(409);", "});"] } }]
+    },
+    {
+      "name": "05 - Login con clave incorrecta",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{demoEmail}}\",\n  \"password\": \"ClaveIncorrecta123\"\n}" },
+        "url": "{{baseUrl}}/api/auth/login"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Clave incorrecta rechazada', function () {", "  pm.response.to.have.status(401);", "});"] } }]
+    },
+    {
+      "name": "06 - Login valido",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{demoEmail}}\",\n  \"password\": \"{{demoPassword}}\"\n}" },
+        "url": "{{baseUrl}}/api/auth/login"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Login correcto y JWT recibido', function () {", "  pm.response.to.have.status(200);", "  pm.expect(pm.response.json().token).to.be.a('string');", "  pm.collectionVariables.set('token', pm.response.json().token);", "});"] } }]
+    },
+    {
+      "name": "07 - Perfil sin token",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/me" },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Sin token se rechaza', function () {", "  pm.response.to.have.status(401);", "});"] } }]
+    },
+    {
+      "name": "08 - Perfil con token",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/auth/me"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Perfil protegido responde', function () {", "  pm.response.to.have.status(200);", "  pm.expect(pm.response.json().user.email).to.eql(pm.collectionVariables.get('demoEmail'));", "});"] } }]
+    }
+  ]
+}
