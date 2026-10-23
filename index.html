@@ -19,6 +19,7 @@
         <a href="#servicios">Servicios</a>
         <a href="#beneficios">Beneficios</a>
         <a href="#contacto">Contacto</a>
+        <a href="#cuenta">Mi cuenta</a>
       </nav>
     </div>
   </header>
@@ -140,6 +141,51 @@
       </div>
     </section>
 
+    <section class="section account-section" id="cuenta">
+      <div class="container">
+        <div class="section-title">
+          <p class="subtitle">Mi cuenta</p>
+          <h2>Accede a NOVA Studio</h2>
+          <p>Regístrate o inicia sesión para consultar tu perfil.</p>
+        </div>
+
+        <p id="auth-status" class="auth-status" role="status" aria-live="polite" hidden></p>
+
+        <div id="auth-forms" class="auth-grid">
+          <form id="register-form" class="auth-card">
+            <h3>Crear cuenta</h3>
+            <label for="register-name">Nombre</label>
+            <input id="register-name" name="name" type="text" autocomplete="name" minlength="2" maxlength="80" required>
+
+            <label for="register-email">Correo electrónico</label>
+            <input id="register-email" name="email" type="email" autocomplete="email" required>
+
+            <label for="register-password">Contraseña</label>
+            <input id="register-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required>
+            <p class="field-help">Mínimo 8 caracteres, con una letra y un número.</p>
+            <button type="submit">Registrarme</button>
+          </form>
+
+          <form id="login-form" class="auth-card">
+            <h3>Iniciar sesión</h3>
+            <label for="login-email">Correo electrónico</label>
+            <input id="login-email" name="email" type="email" autocomplete="email" required>
+
+            <label for="login-password">Contraseña</label>
+            <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+            <button type="submit">Entrar</button>
+          </form>
+        </div>
+
+        <div id="account-profile" class="auth-card account-profile" hidden>
+          <h3>Tu perfil</h3>
+          <p><strong>Nombre:</strong> <span id="profile-name"></span></p>
+          <p><strong>Correo:</strong> <span id="profile-email"></span></p>
+          <button id="logout-button" type="button">Cerrar sesión</button>
+        </div>
+      </div>
+    </section>
+
     <section class="section contact-section" id="contacto">
       <div class="container contact-content">
         <div class="contact-text">
@@ -198,5 +244,6 @@
       <p>© 2026 NOVA Studio. Todos los derechos reservados.</p>
     </div>
   </footer>
+  <script src="js/auth.js" type="module"></script>
 </body>
 </html>

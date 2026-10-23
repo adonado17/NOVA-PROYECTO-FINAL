@@ -1,0 +1,12 @@
+{
+  "name": "nova-studio-frontend",
+  "private": true,
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "check": "tsc --project tsconfig.json --noEmit",
+    "test": "npm run build && npm --prefix backend test"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

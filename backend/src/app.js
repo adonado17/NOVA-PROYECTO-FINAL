@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const path = require('path');
 const authRoutes = require('./routes/auth');
 
 const app = express();
@@ -14,6 +15,13 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+
+const frontend = path.resolve(__dirname, '../..');
+app.use('/css', express.static(path.join(frontend, 'css')));
+app.use('/img', express.static(path.join(frontend, 'img')));
+app.use('/js', express.static(path.join(frontend, 'js')));
+app.get('/', (req, res) => res.sendFile(path.join(frontend, 'index.html')));
+
 app.use((req, res) => res.status(404).json({ message: 'Ruta no encontrada.' }));
 app.use((error, req, res, next) => {
   if (error instanceof SyntaxError && 'body' in error) {

@@ -36,7 +36,7 @@ Después ejecuta:
 npm start
 ```
 
-La consola debe mostrar `NOVA API en http://localhost:3000`. La ruta `GET /api/health` debe devolver `"database": "connected"`.
+La consola debe mostrar `NOVA API en http://localhost:3000`. Abre esa dirección en el navegador para usar el frontend. La ruta `GET /api/health` debe devolver `"database": "connected"`.
 
 ## Endpoints
 
@@ -75,7 +75,7 @@ Las pruebas simulan las operaciones del modelo de usuario en memoria. No necesit
 
 ## Relación con el proyecto frontend
 
-El sitio estático en la raíz de este repositorio presenta la marca, sus servicios y un formulario de contacto. Esta API permite crear y autenticar clientes, pero el frontend aún no llama a estas rutas. Un siguiente módulo podría gestionar servicios y reservas; esas funciones **todavía no están implementadas** aquí.
+El sitio en la raíz de este repositorio presenta la marca, sus servicios y un formulario de contacto. Express sirve el frontend en `/`; el código de «Mi cuenta» se mantiene en `src/auth.ts` y se compila a `js/auth.js` con `npm run build` desde la raíz. Esta sección llama a las rutas de registro, inicio de sesión y perfil. El formulario de contacto aún no envía datos a la API. Los servicios y las reservas **todavía no están implementados** como funciones del backend.
 
 ## Entrega de la actividad
 
