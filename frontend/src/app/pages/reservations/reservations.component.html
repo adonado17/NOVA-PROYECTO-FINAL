@@ -1,0 +1,86 @@
+<main class="section account-section reservations-section">
+  <div class="container">
+    <div class="section-title">
+      <p class="subtitle">Mi cuenta</p>
+      <h1>Mis citas</h1>
+      <p>Envía una solicitud y consulta su estado. La cita queda pendiente hasta que NOVA confirme disponibilidad.</p>
+    </div>
+
+    @if (notice()) { <p class="auth-status" role="status">{{ notice() }}</p> }
+    @if (error()) { <p class="auth-status" data-error="true" role="alert">{{ error() }}</p> }
+
+    <div class="reservations-layout">
+      <section class="auth-card" id="reservation-form" aria-labelledby="reservation-form-title">
+        <h2 id="reservation-form-title">{{ editingId() ? 'Editar solicitud' : 'Solicitar una cita' }}</h2>
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <label for="reservation-service">Servicio</label>
+          <select id="reservation-service" formControlName="service">
+            <option value="">Selecciona un servicio</option>
+            @for (option of serviceOptions; track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+          @if (form.controls.service.invalid && form.controls.service.touched) {
+            <p class="field-error">Selecciona un servicio.</p>
+          }
+
+          <label for="reservation-date">Fecha y hora preferida</label>
+          <input id="reservation-date" type="datetime-local" formControlName="scheduledAt">
+          @if (form.controls.scheduledAt.invalid && form.controls.scheduledAt.touched) {
+            <p class="field-error">Selecciona una fecha y hora.</p>
+          }
+
+          <label for="reservation-notes">Notas (opcional)</label>
+          <textarea id="reservation-notes" rows="4" maxlength="500" formControlName="notes"></textarea>
+          @if (form.controls.notes.invalid && form.controls.notes.touched) {
+            <p class="field-error">Las notas no pueden superar 500 caracteres.</p>
+          }
+
+          <div class="form-actions">
+            <button type="submit" [disabled]="busy()">{{ busy() ? 'Guardando…' : editingId() ? 'Guardar cambios' : 'Solicitar cita' }}</button>
+            @if (editingId()) { <button type="button" class="secondary-button" (click)="cancelEdit()">Cancelar edición</button> }
+          </div>
+        </form>
+      </section>
+
+      <section aria-labelledby="reservations-list-title">
+        <h2 id="reservations-list-title">Solicitudes registradas</h2>
+        @if (loading()) {
+          <p>Cargando solicitudes…</p>
+        } @else if (reservations().length === 0) {
+          <p class="empty-state">Todavía no has solicitado una cita.</p>
+        } @else {
+          <div class="reservation-list">
+            @for (reservation of reservations(); track reservation._id) {
+              <article class="reservation-card">
+                <div class="reservation-heading">
+                  <h3>{{ serviceLabel(reservation.service) }}</h3>
+                  <span class="status-badge">Pendiente</span>
+                </div>
+                <p>{{ reservation.scheduledAt | date:'dd/MM/yyyy HH:mm' }}</p>
+                <div class="card-actions">
+                  <button type="button" (click)="showDetails(reservation._id)">Ver detalle</button>
+                  <button type="button" (click)="edit(reservation)">Editar</button>
+                  <button type="button" class="danger-button" [disabled]="busy()" (click)="remove(reservation)">Eliminar</button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+
+  @if (selected(); as reservation) {
+    <div class="detail-backdrop" role="presentation" (click)="closeDetails()">
+      <section class="detail-dialog" role="dialog" aria-modal="true" aria-labelledby="reservation-detail-title" (click)="$event.stopPropagation()">
+        <button type="button" class="detail-close" aria-label="Cerrar detalle" (click)="closeDetails()">×</button>
+        <h2 id="reservation-detail-title">Detalle de la solicitud</h2>
+        <p><strong>Servicio:</strong> {{ serviceLabel(reservation.service) }}</p>
+        <p><strong>Fecha preferida:</strong> {{ reservation.scheduledAt | date:'dd/MM/yyyy HH:mm' }}</p>
+        <p><strong>Estado:</strong> Pendiente de confirmación</p>
+        <p><strong>Notas:</strong> {{ reservation.notes || 'Sin notas' }}</p>
+      </section>
+    </div>
+  }
+</main>

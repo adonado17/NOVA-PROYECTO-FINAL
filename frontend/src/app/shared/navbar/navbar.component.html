@@ -1,0 +1,20 @@
+<header>
+  <div class="container nav-container">
+    <a routerLink="/" class="logo">NOVA <span>Studio</span></a>
+    <nav aria-label="Navegación principal">
+      <a routerLink="/" fragment="inicio">Inicio</a>
+      <a routerLink="/" fragment="nosotros">Nosotros</a>
+      <a routerLink="/" fragment="servicios">Servicios</a>
+      <a routerLink="/" fragment="beneficios">Beneficios</a>
+      <a routerLink="/" fragment="contacto">Contacto</a>
+      @if (auth.authenticated()) {
+        <a routerLink="/reservations" routerLinkActive="active">Mis citas</a>
+        <a routerLink="/profile" routerLinkActive="active">Mi perfil</a>
+        <button class="nav-logout" type="button" (click)="logout()">Cerrar sesión</button>
+      } @else {
+        <a routerLink="/login" routerLinkActive="active">Iniciar sesión</a>
+        <a routerLink="/register" routerLinkActive="active">Crear cuenta</a>
+      }
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,26 @@
+<main class="section account-section auth-main">
+  <div class="container auth-container">
+    <div class="section-title">
+      <p class="subtitle">Mi cuenta</p>
+      <h1>Iniciar sesión</h1>
+      <p>Entra para consultar tu perfil de NOVA Studio.</p>
+    </div>
+    @if (error()) { <p class="auth-status" data-error="true" role="alert">{{ error() }}</p> }
+    <form class="auth-card" [formGroup]="form" (ngSubmit)="login()">
+      <label for="login-email">Correo electrónico</label>
+      <input id="login-email" type="email" autocomplete="email" formControlName="email">
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <p class="field-error">Ingresa un correo válido.</p>
+      }
+
+      <label for="login-password">Contraseña</label>
+      <input id="login-password" type="password" autocomplete="current-password" formControlName="password">
+      @if (form.controls.password.invalid && form.controls.password.touched) {
+        <p class="field-error">Ingresa tu contraseña.</p>
+      }
+
+      <button type="submit" [disabled]="loading()">{{ loading() ? 'Entrando…' : 'Entrar' }}</button>
+      <p class="auth-switch">¿Aún no tienes cuenta? <a routerLink="/register" [queryParams]="{ returnUrl: route.snapshot.queryParamMap.get('returnUrl') }">Créala aquí</a>.</p>
+    </form>
+  </div>
+</main>

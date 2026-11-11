@@ -1,91 +1,59 @@
 # NOVA Studio
 
-Proyecto final del Bootcamp en Desarrollo Web. Incluye el sitio responsive de NOVA Studio y un flujo de autenticación conectado al backend. El código del navegador se escribe en TypeScript y se compila a JavaScript.
+Proyecto del Bootcamp en Desarrollo Web. NOVA Studio presenta servicios de bienestar y estética. El frontend principal está construido con Angular y TypeScript; la API usa Express y MongoDB Atlas.
 
-## Idea de negocio
+## Funciones actuales
 
-NOVA Studio es una propuesta de centro de bienestar y estética enfocada en servicios de cuidado facial, corporal y relajación dentro de un ambiente tranquilo y cómodo.
+- Portada responsive con información del negocio, servicios, beneficios y contacto.
+- Registro e inicio de sesión en páginas Angular distintas.
+- Perfil protegido con JWT y cierre de sesión.
+- CRUD de solicitudes de cita: crear, consultar, editar y eliminar las propias solicitudes.
+- URL de API centralizada en `frontend/src/app/utils/api.ts`.
 
-## Objetivo
+Las solicitudes de cita quedan pendientes de confirmación. La gestión administrativa de servicios y la confirmación de disponibilidad aún no están implementadas.
 
-Desarrollar una página web responsive que presente la idea de negocio, sus principales servicios, beneficios y medios de contacto.
-
-## Tecnologías utilizadas
-
-- HTML5
-- CSS3
-- Flexbox
-- CSS Grid
-- Media queries
-- TypeScript, JavaScript y Fetch API
-- Node.js, Express y MongoDB Atlas
-
-## Secciones del sitio
-
-1. Barra de navegación
-2. Hero principal
-3. Nosotros
-4. Servicios
-5. Beneficios
-6. Mi cuenta: registro, inicio de sesión y perfil
-7. Contacto
-8. Footer
-
-## Estructura del proyecto
+## Estructura
 
 ```text
 NOVA-PROYECTO-FINAL/
-├── index.html
-├── README.md
-├── .gitignore
-├── css/
-│   └── styles.css
-├── img/
-│   └── favicon.svg
-├── src/
-│   └── auth.ts
-├── js/
-│   ├── auth.js
-│   └── auth.js.map
-├── docs/
-│   └── COBERTURA_Q10.md
-├── package.json
-├── package-lock.json
-├── tsconfig.json
-└── backend/
-    ├── src/
-    ├── test/
-    ├── postman/
-    ├── package.json
-    └── README.md
+├── frontend/               # Aplicación Angular
+│   ├── src/app/pages/      # Portada, cuenta y solicitudes de cita
+│   ├── src/app/services/   # Peticiones HTTP de autenticación y citas
+│   ├── src/app/guards/     # Protección de rutas
+│   ├── src/app/interfaces/ # Tipos de datos
+│   ├── src/app/shared/     # Navegación reutilizable
+│   └── src/app/utils/      # URL de la API y errores
+├── backend/                # API Express, MongoDB y pruebas
+├── docs/                   # Cobertura de los temas del curso
+└── index.html, css/, src/  # Versión HTML/TypeScript anterior
 ```
 
-## Cómo ejecutar NOVA
+La versión HTML anterior queda como alternativa cuando aún no se ha compilado Angular. Tras compilar `frontend/`, Express sirve la aplicación Angular en `http://localhost:3000`.
 
-El frontend y la API se sirven desde Express en el mismo origen. En la raíz instala TypeScript con `npm ci` y compila el frontend con `npm run build`. En `backend/`, instala las dependencias con `npm ci`, copia `.env.example` a `.env` y configura `MONGODB_URI` y `JWT_SECRET` como indica [`backend/README.md`](backend/README.md). Ejecuta `npm start` desde `backend/` y abre `http://localhost:3000` en el navegador. Abrir `index.html` como archivo local no permite usar la autenticación.
+## Instalación y ejecución
 
-## Backend de autenticación
-
-La carpeta [`backend/`](backend/) contiene una API con Express y MongoDB Atlas. Permite registrar clientes, iniciar sesión y consultar el perfil mediante un token JWT. La sección «Mi cuenta» del frontend usa estas rutas para registrar, iniciar sesión, mostrar el perfil y cerrar sesión. El token se guarda en `sessionStorage` hasta que se cierre la pestaña o se cierre la sesión.
-
-Para ejecutarla desde `backend/`:
+Desde la raíz del repositorio:
 
 ```powershell
 npm ci
-Copy-Item .env.example .env
+npm --prefix frontend ci
+npm --prefix backend ci
+Copy-Item backend/.env.example backend/.env
 ```
 
-Configura `MONGODB_URI` y un `JWT_SECRET` de al menos 32 caracteres en `.env`. Ese archivo es privado y está excluido de Git. Después:
+Configura `MONGODB_URI` y un `JWT_SECRET` de al menos 32 caracteres en `backend/.env`. El archivo es privado y está excluido de Git. Después:
 
 ```powershell
-npm start
-npm test
+npm run build
+npm --prefix backend start
 ```
 
-Endpoints disponibles: `GET /api/health`, `POST /api/auth/register`, `POST /api/auth/login` y `GET /api/auth/me`. La documentación, colección de Postman y pruebas están en [`backend/README.md`](backend/README.md).
+Abre `http://localhost:3000`. El registro está en `/register`, el inicio de sesión en `/login`, el perfil en `/profile` y las solicitudes en `/reservations`. Las direcciones antiguas `.html` redirigen a estas rutas cuando Angular está compilado.
 
-## TypeScript y revisión del curso
+Para trabajar con recarga automática, ejecuta el backend en un terminal y `npm --prefix frontend start` en otro. Abre `http://localhost:4200`; el proxy de `frontend/proxy.conf.json` envía `/api` al backend en el puerto 3000.
 
-Edita `src/auth.ts` y ejecuta `npm run build` para generar `js/auth.js` y su mapa de origen. `npm run check` verifica los tipos sin generar archivos; `npm test` compila el frontend y ejecuta las pruebas del backend. El JavaScript compilado está incluido para que el repositorio funcione después de instalar y configurar el backend.
+## Pruebas y API
 
-La matriz de [cobertura de Q10](docs/COBERTURA_Q10.md) indica qué temas hasta TypeScript se usan en NOVA y cuáles no forman parte de esta implementación. El formulario de contacto todavía no envía solicitudes; los servicios y las reservas solo se presentan como contenido del sitio.
+`npm test` compila Angular y ejecuta las pruebas del backend y del frontend. Además de salud y autenticación, la API ofrece `GET`, `POST`, `PUT` y `DELETE` en `/api/reservations`; las rutas de citas requieren un token Bearer.
+
+La colección de Postman y los detalles del servidor están en [backend/README.md](backend/README.md). La relación con el curso está en [docs/COBERTURA_Q10.md](docs/COBERTURA_Q10.md).

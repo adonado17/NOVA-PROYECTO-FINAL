@@ -1,4 +1,10 @@
 "use strict";
+const apiUrl = '/api';
+const tokenKey = 'nova_token';
+const statusMessage = document.querySelector('#auth-status');
+const registerForm = document.querySelector('#register-form');
+const loginForm = document.querySelector('#login-form');
+const profile = document.querySelector('#account-profile');
 class ApiRequestError extends Error {
     status;
     constructor(message, status) {
@@ -7,20 +13,6 @@ class ApiRequestError extends Error {
         this.name = 'ApiRequestError';
     }
 }
-function requiredElement(selector) {
-    const element = document.querySelector(selector);
-    if (!element)
-        throw new Error(`Falta el elemento ${selector}.`);
-    return element;
-}
-const registerForm = requiredElement('#register-form');
-const loginForm = requiredElement('#login-form');
-const authForms = requiredElement('#auth-forms');
-const profile = requiredElement('#account-profile');
-const statusMessage = requiredElement('#auth-status');
-const logoutButton = requiredElement('#logout-button');
-const profileName = requiredElement('#profile-name');
-const profileEmail = requiredElement('#profile-email');
 function isObject(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -50,22 +42,14 @@ function errorMessage(value) {
     return typeof value.message === 'string' ? value.message : 'No se pudo completar la solicitud.';
 }
 function showStatus(message, isError = false) {
+    if (!statusMessage)
+        return;
     statusMessage.textContent = message;
     statusMessage.dataset.error = String(isError);
     statusMessage.hidden = message.length === 0;
 }
-function showProfile(user) {
-    profileName.textContent = user.name;
-    profileEmail.textContent = user.email;
-    authForms.hidden = true;
-    profile.hidden = false;
-}
-function showForms() {
-    profile.hidden = true;
-    authForms.hidden = false;
-}
 async function apiRequest(path, validate, options = {}) {
-    const response = await fetch(path, {
+    const response = await fetch(`${apiUrl}${path}`, {
         ...options,
         headers: { 'Content-Type': 'application/json', ...options.headers },
     });
@@ -88,7 +72,7 @@ function formValues(form, route) {
         email: String(data.get('email') ?? ''),
         password: String(data.get('password') ?? ''),
     };
-    if (route === '/api/auth/register')
+    if (route === 'register')
         values.name = String(data.get('name') ?? '');
     return values;
 }
@@ -99,55 +83,62 @@ async function submitAuth(form, route) {
     button.disabled = true;
     showStatus('Procesando solicitud…');
     try {
-        const data = await apiRequest(route, isAuthResponse, {
+        const data = await apiRequest(`/auth/${route}`, isAuthResponse, {
             method: 'POST',
             body: JSON.stringify(formValues(form, route)),
         });
-        sessionStorage.setItem('nova_token', data.token);
-        form.reset();
-        showProfile(data.user);
-        showStatus(route === '/api/auth/register' ? 'Cuenta creada correctamente.' : 'Sesión iniciada.');
+        sessionStorage.setItem(tokenKey, data.token);
+        window.location.assign('perfil.html');
     }
     catch (error) {
         const message = error instanceof TypeError
             ? 'No se pudo conectar con el servidor.'
             : error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
         showStatus(message, true);
-    }
-    finally {
         button.disabled = false;
     }
 }
-registerForm.addEventListener('submit', (event) => {
+registerForm?.addEventListener('submit', (event) => {
     event.preventDefault();
-    void submitAuth(registerForm, '/api/auth/register');
+    void submitAuth(registerForm, 'register');
 });
-loginForm.addEventListener('submit', (event) => {
+loginForm?.addEventListener('submit', (event) => {
     event.preventDefault();
-    void submitAuth(loginForm, '/api/auth/login');
+    void submitAuth(loginForm, 'login');
 });
-logoutButton.addEventListener('click', () => {
-    sessionStorage.removeItem('nova_token');
-    showForms();
-    showStatus('Sesión cerrada.');
+document.querySelector('#logout-button')?.addEventListener('click', () => {
+    sessionStorage.removeItem(tokenKey);
+    window.location.assign('iniciar-sesion.html');
 });
 async function restoreSession() {
-    const token = sessionStorage.getItem('nova_token');
-    if (!token)
+    if (!profile)
         return;
+    const token = sessionStorage.getItem(tokenKey);
+    if (!token) {
+        window.location.replace('iniciar-sesion.html');
+        return;
+    }
+    showStatus('Cargando perfil…');
     try {
-        const data = await apiRequest('/api/auth/me', isProfileResponse, {
+        const data = await apiRequest('/auth/me', isProfileResponse, {
             headers: { Authorization: `Bearer ${token}` },
         });
-        showProfile(data.user);
+        const name = document.querySelector('#profile-name');
+        const email = document.querySelector('#profile-email');
+        if (name)
+            name.textContent = data.user.name;
+        if (email)
+            email.textContent = data.user.email;
+        profile.hidden = false;
+        showStatus('');
     }
     catch (error) {
         if (error instanceof ApiRequestError && error.status === 401) {
-            sessionStorage.removeItem('nova_token');
-            showForms();
+            sessionStorage.removeItem(tokenKey);
+            window.location.replace('iniciar-sesion.html');
             return;
         }
-        showStatus('No se pudo recuperar la sesión. Inténtalo de nuevo.', true);
+        showStatus('No se pudo recuperar el perfil. Inténtalo de nuevo.', true);
     }
 }
 void restoreSession();

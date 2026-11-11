@@ -1,0 +1,17 @@
+<main class="section account-section auth-main">
+  <div class="container auth-container">
+    <div class="section-title">
+      <p class="subtitle">Mi cuenta</p>
+      <h1>Mi perfil</h1>
+    </div>
+    @if (loading()) { <p class="auth-status" role="status">Cargando perfil…</p> }
+    @if (error()) { <p class="auth-status" data-error="true" role="alert">{{ error() }}</p> }
+    @if (auth.user(); as user) {
+      <div class="auth-card account-profile">
+        <p><strong>Nombre:</strong> {{ user.name }}</p>
+        <p><strong>Correo:</strong> {{ user.email }}</p>
+        <a class="button" routerLink="/reservations">Ver mis citas</a>
+      </div>
+    }
+  </div>
+</main>

@@ -1,6 +1,8 @@
 const { before, after, test } = require('node:test');
 const assert = require('node:assert/strict');
 const request = require('supertest');
+const fs = require('node:fs');
+const path = require('node:path');
 const app = require('../src/app');
 const User = require('../src/models/User');
 
@@ -85,4 +87,27 @@ test('estado de la API y JSON invalido', async () => {
     .set('Content-Type', 'application/json')
     .send('{');
   assert.equal(malformed.status, 400);
+});
+
+test('registro e inicio de sesion tienen paginas separadas', async () => {
+  const home = await request(app).get('/');
+  assert.equal(home.status, 200);
+  const angularBuilt = fs.existsSync(path.resolve(__dirname, '../../frontend/dist/frontend/browser/index.html'));
+  if (angularBuilt) {
+    assert.match(home.text, /<app-root>/);
+    for (const route of ['/login', '/register', '/profile']) {
+      const page = await request(app).get(route);
+      assert.equal(page.status, 200);
+      assert.match(page.text, /<app-root>/);
+    }
+    const legacy = await request(app).get('/iniciar-sesion.html');
+    assert.equal(legacy.status, 302);
+    assert.equal(legacy.headers.location, '/login');
+  } else {
+    assert.doesNotMatch(home.text, /id="register-form"|id="login-form"/);
+    const registration = await request(app).get('/registro.html');
+    const login = await request(app).get('/iniciar-sesion.html');
+    assert.match(registration.text, /id="register-form"/);
+    assert.match(login.text, /id="login-form"/);
+  }
 });

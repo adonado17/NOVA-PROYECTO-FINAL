@@ -1,6 +1,6 @@
-# NOVA Studio - backend de autenticación
+# NOVA Studio - API de cuentas y citas
 
-Esta API de Node.js está integrada en el repositorio de NOVA Studio, el centro de bienestar y estética del frontend HTML/CSS. Incluye autenticación de clientes y conexión con MongoDB Atlas.
+Esta API de Node.js está integrada en el repositorio de NOVA Studio. Atiende al frontend Angular y conserva una versión HTML de respaldo. Incluye autenticación de clientes y conexión con MongoDB Atlas.
 
 ## Qué hace
 
@@ -10,7 +10,10 @@ Esta API de Node.js está integrada en el repositorio de NOVA Studio, el centro 
 - Guarda únicamente un hash de la contraseña con `bcryptjs`.
 - Inicia sesión y entrega un token JWT con vigencia de 2 horas.
 - Protege la ruta de perfil con el token.
+- Permite crear, listar, consultar, editar y eliminar solicitudes de cita del usuario autenticado.
 - Devuelve errores claros sin exponer contraseñas ni detalles internos.
+
+El código separa `src/routes/` (endpoints), `src/controllers/` (operaciones), `src/validators/` (reglas de entrada), `src/middleware/` (validación y autorización), `src/models/` (esquemas de usuario y reserva) y `src/config/` (conexión a MongoDB y servicios).
 
 ## Requisitos
 
@@ -36,7 +39,7 @@ Después ejecuta:
 npm start
 ```
 
-La consola debe mostrar `NOVA API en http://localhost:3000`. Abre esa dirección en el navegador para usar el frontend. La ruta `GET /api/health` debe devolver `"database": "connected"`.
+La consola debe mostrar `NOVA API en http://localhost:3000`. Compila Angular con `npm run build` desde la raíz antes de abrir esa dirección para usar el frontend principal. La ruta `GET /api/health` debe devolver `"database": "connected"`.
 
 ## Endpoints
 
@@ -46,6 +49,11 @@ La consola debe mostrar `NOVA API en http://localhost:3000`. Abre esa dirección
 | POST | `/api/auth/register` | Registra un usuario | 201 |
 | POST | `/api/auth/login` | Autentica y entrega JWT | 200 |
 | GET | `/api/auth/me` | Devuelve perfil con token Bearer | 200 |
+| GET | `/api/reservations` | Lista las solicitudes propias | 200 |
+| GET | `/api/reservations/:id` | Consulta una solicitud propia | 200 |
+| POST | `/api/reservations` | Crea una solicitud pendiente | 201 |
+| PUT | `/api/reservations/:id` | Actualiza una solicitud propia | 200 |
+| DELETE | `/api/reservations/:id` | Elimina una solicitud propia | 204 |
 
 Ejemplo de cuerpo JSON para registro:
 
@@ -59,11 +67,11 @@ Ejemplo de cuerpo JSON para registro:
 
 Para iniciar sesión se envían únicamente `email` y `password`. Para consultar el perfil se envía `Authorization: Bearer TU_TOKEN`.
 
-El correo duplicado devuelve 409, los datos inválidos 422, la contraseña incorrecta o el token ausente 401.
+El correo duplicado devuelve 409, los datos inválidos 422, la contraseña incorrecta o el token ausente 401. Una solicitud ajena o inexistente devuelve 404. Para crear o editar una cita se envían `service` (`limpieza`, `hidratacion`, `masaje` o `corporal`), `scheduledAt` (fecha ISO futura) y `notes` (opcional, máximo 500 caracteres). La solicitud no implica confirmación de disponibilidad.
 
 ## Pruebas con Postman
 
-Importa `postman/NOVA-Studio.postman_collection.json`. La colección contiene ocho peticiones en orden. La petición de registro válido crea automáticamente un correo de prueba nuevo y guarda el token para la petición de perfil. Ejecuta cada petición para entender su respuesta o usa `Run collection` para probarlas juntas.
+Importa `postman/NOVA-Studio.postman_collection.json`. La colección contiene trece peticiones en orden. El registro válido crea un correo de prueba nuevo y guarda el token; las últimas cinco peticiones crean, consultan, editan y eliminan una solicitud de prueba. Ejecuta cada petición para entender su respuesta o usa `Run collection` para probarlas juntas.
 
 ## Comprobación automática
 
@@ -71,11 +79,11 @@ Importa `postman/NOVA-Studio.postman_collection.json`. La colección contiene oc
 npm test
 ```
 
-Las pruebas simulan las operaciones del modelo de usuario en memoria. No necesitan credenciales de Atlas ni descargan MongoDB. Cubren registro, validación, correo duplicado, inicio de sesión, JWT, perfil protegido y JSON inválido. La conexión real a Atlas se verifica por separado con `/api/health` al iniciar la API.
+Las pruebas simulan las operaciones de los modelos en memoria. No necesitan credenciales de Atlas ni descargan MongoDB. Cubren autenticación y el CRUD de solicitudes, incluida la separación por usuario. La conexión real a Atlas se verifica por separado con `/api/health` al iniciar la API.
 
 ## Relación con el proyecto frontend
 
-El sitio en la raíz de este repositorio presenta la marca, sus servicios y un formulario de contacto. Express sirve el frontend en `/`; el código de «Mi cuenta» se mantiene en `src/auth.ts` y se compila a `js/auth.js` con `npm run build` desde la raíz. Esta sección llama a las rutas de registro, inicio de sesión y perfil. El formulario de contacto aún no envía datos a la API. Los servicios y las reservas **todavía no están implementados** como funciones del backend.
+La aplicación en `frontend/` presenta la marca y sus servicios. Express sirve la compilación Angular en `/`, `/login`, `/register`, `/profile` y `/reservations`; las direcciones antiguas `.html` redirigen a las rutas Angular. Si no existe una compilación, Express muestra la versión HTML anterior. El frontend usa `/api` para autenticación y solicitudes de cita. La portada dirige a los usuarios a la pantalla de citas. La gestión de servicios y la confirmación administrativa de citas están pendientes.
 
 ## Entrega de la actividad
 

@@ -1,0 +1,33 @@
+<main class="section account-section auth-main">
+  <div class="container auth-container">
+    <div class="section-title">
+      <p class="subtitle">Mi cuenta</p>
+      <h1>Crear cuenta</h1>
+      <p>Regístrate para consultar tu perfil en NOVA Studio.</p>
+    </div>
+    @if (error()) { <p class="auth-status" data-error="true" role="alert">{{ error() }}</p> }
+    <form class="auth-card" [formGroup]="form" (ngSubmit)="register()">
+      <label for="register-name">Nombre</label>
+      <input id="register-name" type="text" autocomplete="name" formControlName="name">
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <p class="field-error">El nombre debe tener entre 2 y 80 caracteres.</p>
+      }
+
+      <label for="register-email">Correo electrónico</label>
+      <input id="register-email" type="email" autocomplete="email" formControlName="email">
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <p class="field-error">Ingresa un correo válido.</p>
+      }
+
+      <label for="register-password">Contraseña</label>
+      <input id="register-password" type="password" autocomplete="new-password" formControlName="password">
+      <p class="field-help">Mínimo 8 caracteres, con una letra y un número.</p>
+      @if (form.controls.password.invalid && form.controls.password.touched) {
+        <p class="field-error">Revisa los requisitos de la contraseña.</p>
+      }
+
+      <button type="submit" [disabled]="loading()">{{ loading() ? 'Creando cuenta…' : 'Crear cuenta' }}</button>
+      <p class="auth-switch">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a>.</p>
+    </form>
+  </div>
+</main>

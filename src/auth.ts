@@ -13,9 +13,15 @@ interface ProfileResponse {
   user: AuthUser;
 }
 
-type AuthRoute = '/api/auth/register' | '/api/auth/login';
-
+type AuthRoute = 'register' | 'login';
 type JsonObject = Record<string, unknown>;
+
+const apiUrl = '/api';
+const tokenKey = 'nova_token';
+const statusMessage = document.querySelector<HTMLElement>('#auth-status');
+const registerForm = document.querySelector<HTMLFormElement>('#register-form');
+const loginForm = document.querySelector<HTMLFormElement>('#login-form');
+const profile = document.querySelector<HTMLElement>('#account-profile');
 
 class ApiRequestError extends Error {
   constructor(message: string, readonly status: number) {
@@ -23,21 +29,6 @@ class ApiRequestError extends Error {
     this.name = 'ApiRequestError';
   }
 }
-
-function requiredElement<T extends HTMLElement>(selector: string): T {
-  const element = document.querySelector<T>(selector);
-  if (!element) throw new Error(`Falta el elemento ${selector}.`);
-  return element;
-}
-
-const registerForm = requiredElement<HTMLFormElement>('#register-form');
-const loginForm = requiredElement<HTMLFormElement>('#login-form');
-const authForms = requiredElement<HTMLElement>('#auth-forms');
-const profile = requiredElement<HTMLElement>('#account-profile');
-const statusMessage = requiredElement<HTMLElement>('#auth-status');
-const logoutButton = requiredElement<HTMLButtonElement>('#logout-button');
-const profileName = requiredElement<HTMLElement>('#profile-name');
-const profileEmail = requiredElement<HTMLElement>('#profile-email');
 
 function isObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -71,21 +62,10 @@ function errorMessage(value: unknown): string {
 }
 
 function showStatus(message: string, isError = false): void {
+  if (!statusMessage) return;
   statusMessage.textContent = message;
   statusMessage.dataset.error = String(isError);
   statusMessage.hidden = message.length === 0;
-}
-
-function showProfile(user: AuthUser): void {
-  profileName.textContent = user.name;
-  profileEmail.textContent = user.email;
-  authForms.hidden = true;
-  profile.hidden = false;
-}
-
-function showForms(): void {
-  profile.hidden = true;
-  authForms.hidden = false;
 }
 
 async function apiRequest<T>(
@@ -93,7 +73,7 @@ async function apiRequest<T>(
   validate: (value: unknown) => value is T,
   options: RequestInit = {},
 ): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(`${apiUrl}${path}`, {
     ...options,
     headers: { 'Content-Type': 'application/json', ...options.headers },
   });
@@ -116,7 +96,7 @@ function formValues(form: HTMLFormElement, route: AuthRoute): JsonObject {
     email: String(data.get('email') ?? ''),
     password: String(data.get('password') ?? ''),
   };
-  if (route === '/api/auth/register') values.name = String(data.get('name') ?? '');
+  if (route === 'register') values.name = String(data.get('name') ?? '');
   return values;
 }
 
@@ -127,56 +107,62 @@ async function submitAuth(form: HTMLFormElement, route: AuthRoute): Promise<void
   showStatus('Procesando solicitud…');
 
   try {
-    const data = await apiRequest(route, isAuthResponse, {
+    const data = await apiRequest(`/auth/${route}`, isAuthResponse, {
       method: 'POST',
       body: JSON.stringify(formValues(form, route)),
     });
-    sessionStorage.setItem('nova_token', data.token);
-    form.reset();
-    showProfile(data.user);
-    showStatus(route === '/api/auth/register' ? 'Cuenta creada correctamente.' : 'Sesión iniciada.');
+    sessionStorage.setItem(tokenKey, data.token);
+    window.location.assign('perfil.html');
   } catch (error: unknown) {
     const message = error instanceof TypeError
       ? 'No se pudo conectar con el servidor.'
       : error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
     showStatus(message, true);
-  } finally {
     button.disabled = false;
   }
 }
 
-registerForm.addEventListener('submit', (event: SubmitEvent) => {
+registerForm?.addEventListener('submit', (event: SubmitEvent) => {
   event.preventDefault();
-  void submitAuth(registerForm, '/api/auth/register');
+  void submitAuth(registerForm, 'register');
 });
 
-loginForm.addEventListener('submit', (event: SubmitEvent) => {
+loginForm?.addEventListener('submit', (event: SubmitEvent) => {
   event.preventDefault();
-  void submitAuth(loginForm, '/api/auth/login');
+  void submitAuth(loginForm, 'login');
 });
 
-logoutButton.addEventListener('click', () => {
-  sessionStorage.removeItem('nova_token');
-  showForms();
-  showStatus('Sesión cerrada.');
+document.querySelector<HTMLButtonElement>('#logout-button')?.addEventListener('click', () => {
+  sessionStorage.removeItem(tokenKey);
+  window.location.assign('iniciar-sesion.html');
 });
 
 async function restoreSession(): Promise<void> {
-  const token = sessionStorage.getItem('nova_token');
-  if (!token) return;
+  if (!profile) return;
+  const token = sessionStorage.getItem(tokenKey);
+  if (!token) {
+    window.location.replace('iniciar-sesion.html');
+    return;
+  }
 
+  showStatus('Cargando perfil…');
   try {
-    const data = await apiRequest('/api/auth/me', isProfileResponse, {
+    const data = await apiRequest('/auth/me', isProfileResponse, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    showProfile(data.user);
+    const name = document.querySelector<HTMLElement>('#profile-name');
+    const email = document.querySelector<HTMLElement>('#profile-email');
+    if (name) name.textContent = data.user.name;
+    if (email) email.textContent = data.user.email;
+    profile.hidden = false;
+    showStatus('');
   } catch (error: unknown) {
     if (error instanceof ApiRequestError && error.status === 401) {
-      sessionStorage.removeItem('nova_token');
-      showForms();
+      sessionStorage.removeItem(tokenKey);
+      window.location.replace('iniciar-sesion.html');
       return;
     }
-    showStatus('No se pudo recuperar la sesión. Inténtalo de nuevo.', true);
+    showStatus('No se pudo recuperar el perfil. Inténtalo de nuevo.', true);
   }
 }
 

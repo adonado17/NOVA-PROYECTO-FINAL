@@ -1,14 +1,16 @@
 {
   "info": {
     "name": "NOVA Studio - API de practica",
-    "description": "Coleccion para demostrar conexion, registro, validacion, inicio de sesion y JWT. El registro valido crea un correo nuevo en cada ejecucion.",
+    "description": "Coleccion para demostrar conexion, autenticacion y CRUD de solicitudes de cita. El registro valido crea un correo nuevo en cada ejecucion.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:3000" },
     { "key": "demoEmail", "value": "cliente.nova@example.com" },
     { "key": "demoPassword", "value": "Clave12345" },
-    { "key": "token", "value": "" }
+    { "key": "token", "value": "" },
+    { "key": "reservationId", "value": "" },
+    { "key": "desiredDate", "value": "" }
   ],
   "item": [
     {
@@ -82,6 +84,44 @@
         "url": "{{baseUrl}}/api/auth/me"
       },
       "event": [{ "listen": "test", "script": { "exec": ["pm.test('Perfil protegido responde', function () {", "  pm.response.to.have.status(200);", "  pm.expect(pm.response.json().user.email).to.eql(pm.collectionVariables.get('demoEmail'));", "});"] } }]
+    },
+    {
+      "name": "09 - Crear solicitud de cita",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "body": { "mode": "raw", "raw": "{\"service\":\"masaje\",\"scheduledAt\":\"{{desiredDate}}\",\"notes\":\"Solicitud de prueba\"}" },
+        "url": "{{baseUrl}}/api/reservations"
+      },
+      "event": [
+        { "listen": "prerequest", "script": { "exec": ["pm.collectionVariables.set('desiredDate', new Date(Date.now() + 86400000).toISOString());"] } },
+        { "listen": "test", "script": { "exec": ["pm.test('Solicitud pendiente creada', function () {", "  pm.response.to.have.status(201);", "  pm.expect(pm.response.json().reservation.status).to.eql('pendiente');", "  pm.collectionVariables.set('reservationId', pm.response.json().reservation._id);", "});"] } }
+      ]
+    },
+    {
+      "name": "10 - Listar mis solicitudes",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/reservations" },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Listado disponible', function () {", "  pm.response.to.have.status(200);", "  pm.expect(pm.response.json().reservations).to.be.an('array');", "});"] } }]
+    },
+    {
+      "name": "11 - Consultar solicitud",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/reservations/{{reservationId}}" },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Detalle disponible', function () {", "  pm.response.to.have.status(200);", "  pm.expect(pm.response.json().reservation._id).to.eql(pm.collectionVariables.get('reservationId'));", "});"] } }]
+    },
+    {
+      "name": "12 - Editar solicitud",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+        "body": { "mode": "raw", "raw": "{\"service\":\"limpieza\",\"scheduledAt\":\"{{desiredDate}}\",\"notes\":\"Solicitud actualizada\"}" },
+        "url": "{{baseUrl}}/api/reservations/{{reservationId}}"
+      },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Solicitud actualizada', function () {", "  pm.response.to.have.status(200);", "  pm.expect(pm.response.json().reservation.service).to.eql('limpieza');", "});"] } }]
+    },
+    {
+      "name": "13 - Eliminar solicitud de prueba",
+      "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/reservations/{{reservationId}}" },
+      "event": [{ "listen": "test", "script": { "exec": ["pm.test('Solicitud eliminada', function () {", "  pm.response.to.have.status(204);", "});"] } }]
     }
   ]
 }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Consulta tu perfil de NOVA Studio.">
+  <title>Mi perfil | NOVA Studio</title>
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-layout">
+  <header>
+    <div class="container nav-container">
+      <a href="/" class="logo">NOVA <span>Studio</span></a>
+      <nav aria-label="Navegación principal">
+        <a href="/">Inicio</a>
+        <a href="/#servicios">Servicios</a>
+        <a href="/#contacto">Contacto</a>
+        <a href="perfil.html" aria-current="page">Mi perfil</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="section account-section auth-main">
+    <div class="container auth-container">
+      <div class="section-title">
+        <p class="subtitle">Mi cuenta</p>
+        <h1>Mi perfil</h1>
+      </div>
+      <p id="auth-status" class="auth-status" role="status" aria-live="polite" hidden></p>
+      <div id="account-profile" class="auth-card account-profile" hidden>
+        <p><strong>Nombre:</strong> <span id="profile-name"></span></p>
+        <p><strong>Correo:</strong> <span id="profile-email"></span></p>
+        <button id="logout-button" type="button">Cerrar sesión</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container footer-content">
+      <div><a href="/" class="logo footer-logo">NOVA <span>Studio</span></a><p>Bienestar, estética y cuidado personal.</p></div>
+      <div class="footer-links"><a href="/">Inicio</a><a href="/#servicios">Servicios</a><a href="/#contacto">Contacto</a></div>
+    </div>
+    <div class="container copyright"><p>© 2026 NOVA Studio. Todos los derechos reservados.</p></div>
+  </footer>
+  <script src="js/auth.js" type="module"></script>
+</body>
+</html>

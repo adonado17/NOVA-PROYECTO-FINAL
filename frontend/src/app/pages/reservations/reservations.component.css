@@ -1,0 +1,129 @@
+.reservations-section .section-title h1 {
+  font-size: clamp(2.1rem, 5vw, 3rem);
+}
+
+.reservations-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 390px) 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+.reservations-layout h2 {
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+}
+
+.auth-card select,
+.auth-card textarea {
+  width: 100%;
+  padding: 11px 12px;
+  margin-bottom: 18px;
+  border: 1px solid #cfc7c0;
+  border-radius: 4px;
+  font: inherit;
+  background: white;
+}
+
+.form-actions,
+.card-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.form-actions button,
+.card-actions button {
+  border: 0;
+  padding: 10px 14px;
+  border-radius: 5px;
+  background: var(--primary);
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}
+
+.form-actions button:disabled,
+.card-actions button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.form-actions .secondary-button,
+.card-actions button:not(.danger-button) {
+  background: var(--light);
+  color: var(--text);
+}
+
+.card-actions .danger-button {
+  background: #902d23;
+}
+
+.reservation-list {
+  display: grid;
+  gap: 14px;
+}
+
+.reservation-card,
+.empty-state {
+  padding: 20px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.reservation-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reservation-card p {
+  color: var(--muted);
+  margin: 8px 0 16px;
+}
+
+.status-badge {
+  padding: 4px 9px;
+  border-radius: 100px;
+  background: #f5e7b9;
+  color: #604900;
+  font-size: .8rem;
+}
+
+.detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 55%);
+}
+
+.detail-dialog {
+  position: relative;
+  width: min(100%, 520px);
+  padding: 30px;
+  border-radius: 8px;
+  background: white;
+}
+
+.detail-dialog p {
+  margin-top: 12px;
+}
+
+.detail-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  border: 0;
+  background: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+}
+
+@media (max-width: 800px) {
+  .reservations-layout { grid-template-columns: 1fr; }
+}
