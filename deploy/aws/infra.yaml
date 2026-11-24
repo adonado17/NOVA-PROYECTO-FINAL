@@ -1,0 +1,332 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  NOVA single EC2 instance with a private artifact bucket, Elastic IP and SSM.
+  Bootstrap serves maintenance HTTP only; application and public IP TLS are
+  activated separately after the Elastic IP is associated and Atlas allows it.
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: Existing VPC with an Internet Gateway and a public subnet.
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: Existing public subnet in VpcId with a route to the Internet Gateway.
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+    Description: Official standard Amazon Linux 2023 x86_64 AMI.
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    AllowedValues:
+      - t3.micro
+      - t3.small
+  BundleKey:
+    Type: String
+    Default: releases/nova-production.zip
+    MinLength: 1
+    MaxLength: 1024
+    AllowedPattern: '^[A-Za-z0-9][A-Za-z0-9._/-]*\.zip$'
+    Description: Exact private S3 object key that this instance may download.
+
+Resources:
+  BundleBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        - Key: Application
+          Value: NOVA
+
+  BundleBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref BundleBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: RequireEncryptedTransport
+            Effect: Deny
+            Principal: '*'
+            Action: s3:*
+            Resource:
+              - !GetAtt BundleBucket.Arn
+              - !Sub '${BundleBucket.Arn}/*'
+            Condition:
+              Bool:
+                aws:SecureTransport: 'false'
+
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore'
+      Policies:
+        - PolicyName: NovaRuntimeReadOnly
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ReadExactApplicationBundle
+                Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub '${BundleBucket.Arn}/${BundleKey}'
+              - Sid: ReadOnlyNovaRuntimeParameters
+                Effect: Allow
+                Action: ssm:GetParameter
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nova/prod/mongodb-uri'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nova/prod/jwt-secret'
+              # The managed SSM agent policy otherwise allows reads of every
+              # parameter. An explicit deny keeps its agent permissions while
+              # restricting application parameter reads to the two exact ARNs.
+              - Sid: DenyOtherParameterReads
+                Effect: Deny
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                NotResource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nova/prod/mongodb-uri'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nova/prod/jwt-secret'
+              - Sid: DenyParameterPathEnumeration
+                Effect: Deny
+                Action: ssm:GetParametersByPath
+                Resource: '*'
+              - Sid: DecryptOnlyNovaParametersThroughSsm
+                Effect: Allow
+                Action: kms:Decrypt
+                Resource: !Sub 'arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/*'
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub 'ssm.${AWS::Region}.${AWS::URLSuffix}'
+                    kms:CallerAccount: !Ref AWS::AccountId
+                  ArnEquals:
+                    kms:EncryptionContext:PARAMETER_ARN:
+                      - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nova/prod/mongodb-uri'
+                      - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nova/prod/jwt-secret'
+      Tags:
+        - Key: Application
+          Value: NOVA
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref InstanceRole
+
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: NOVA HTTP ACME and HTTPS only; administration uses SSM.
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - Description: HTTP ACME validation and maintenance or HTTPS redirect.
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - Description: Public HTTPS.
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - Description: Package repositories, SSM, S3, ACME and MongoDB Atlas.
+          IpProtocol: '-1'
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-web'
+        - Key: Application
+          Value: NOVA
+
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref InstanceProfile
+      MetadataOptions:
+        HttpEndpoint: enabled
+        HttpTokens: required
+        HttpPutResponseHopLimit: 1
+      CreditSpecification:
+        CPUCredits: standard
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeType: gp3
+            VolumeSize: 10
+            Encrypted: true
+            DeleteOnTermination: true
+      NetworkInterfaces:
+        - DeviceIndex: '0'
+          AssociatePublicIpAddress: true
+          SubnetId: !Ref SubnetId
+          GroupSet:
+            - !Ref WebSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-app'
+        - Key: Application
+          Value: NOVA
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -Eeuo pipefail
+          exec > >(tee -a /var/log/nova-bootstrap.log) 2>&1
+          trap 'echo "NOVA bootstrap failed; inspect /var/log/nova-bootstrap.log" >&2' ERR
+
+          # No application bundle or runtime secrets are read during bootstrap.
+          # No certificate is requested until the separate activation phase.
+          dnf install -y nodejs24 nodejs24-npm nginx unzip openssl python3.13 python3.13-pip
+          if ! command -v aws >/dev/null 2>&1; then
+            dnf install -y awscli-2
+          fi
+          alternatives --set node /usr/bin/node-24
+          /usr/bin/node-24 -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (major !== 24 || minor < 15) throw new Error("NOVA requires Node 24.15 or newer within major 24");'
+          /usr/bin/npm-24 --version
+          aws --version
+          openssl version
+
+          if ! id nova >/dev/null 2>&1; then
+            useradd --system --user-group --home-dir /var/lib/nova --create-home --shell /sbin/nologin nova
+          fi
+          install -d -o root -g root -m 0755 /opt/nova /opt/nova/releases
+          install -d -o nova -g nova -m 0750 /var/lib/nova /var/lib/nova/.npm
+          install -d -o root -g root -m 0700 /etc/nova
+          install -d -o root -g root -m 0755 /var/www/letsencrypt
+          install -d -o root -g root -m 0755 /var/www/letsencrypt/.well-known/acme-challenge
+
+          # Python 3.13 is installed in parallel; the system python3 is unchanged.
+          python3.13 -m venv /opt/certbot
+          /opt/certbot/bin/python -m pip install --disable-pip-version-check --retries 5 'certbot==5.10.0'
+          /opt/certbot/bin/certbot --version
+
+          cat > /etc/systemd/system/nova.service <<'UNIT'
+          [Unit]
+          Description=NOVA Studio API and Angular frontend
+          Wants=network-online.target
+          After=network-online.target
+          ConditionPathExists=/opt/nova/current/backend/src/server.js
+          ConditionPathExists=/etc/nova/nova.env
+
+          [Service]
+          Type=simple
+          User=nova
+          Group=nova
+          WorkingDirectory=/opt/nova/current
+          Environment=NODE_ENV=production
+          Environment=PORT=3000
+          Environment=HOME=/var/lib/nova
+          Environment=AWS_REGION=${AWS::Region}
+          Environment=AWS_DEFAULT_REGION=${AWS::Region}
+          EnvironmentFile=/etc/nova/nova.env
+          ExecStart=/usr/bin/node-24 /opt/nova/current/backend/src/server.js
+          Restart=on-failure
+          RestartSec=5
+          TimeoutStopSec=15
+          KillSignal=SIGTERM
+          NoNewPrivileges=true
+          PrivateTmp=true
+
+          [Install]
+          WantedBy=multi-user.target
+          UNIT
+
+          # Use a clean main configuration so the packaged default HTTP server
+          # cannot compete with nova.conf or the later HTTPS configuration.
+          cat > /etc/nginx/nginx.conf <<'NGINX'
+          user nginx;
+          worker_processes auto;
+          error_log /var/log/nginx/error.log warn;
+          pid /run/nginx.pid;
+          include /usr/share/nginx/modules/*.conf;
+          events {
+              worker_connections 1024;
+          }
+          http {
+              include /etc/nginx/mime.types;
+              default_type application/octet-stream;
+              access_log /var/log/nginx/access.log combined;
+              sendfile on;
+              keepalive_timeout 65;
+              include /etc/nginx/conf.d/*.conf;
+          }
+          NGINX
+
+          cat > /etc/nginx/conf.d/nova.conf <<'HTTP'
+          server {
+              listen 80 default_server;
+              server_name _;
+              location ^~ /.well-known/acme-challenge/ {
+                  root /var/www/letsencrypt;
+                  default_type text/plain;
+                  try_files $uri =404;
+              }
+              location / {
+                  default_type text/plain;
+                  return 503 "NOVA is being prepared.\n";
+              }
+          }
+          HTTP
+
+          systemctl daemon-reload
+          nginx -t
+          systemctl enable --now nginx
+          systemctl enable --now amazon-ssm-agent
+          systemctl is-active --quiet nginx
+          systemctl is-active --quiet amazon-ssm-agent
+
+          # nova.service stays stopped and disabled until activation. The marker
+          # is written only after every bootstrap command above succeeds.
+          date --iso-8601=seconds > /var/lib/nova/bootstrap-ready
+          chmod 0644 /var/lib/nova/bootstrap-ready
+          echo 'NOVA bootstrap ready; waiting for Elastic IP, Atlas access and activation.'
+
+  PublicAddress:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-public-ip'
+        - Key: Application
+          Value: NOVA
+
+  PublicAddressAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt PublicAddress.AllocationId
+      InstanceId: !Ref Instance
+
+Outputs:
+  InstanceId:
+    Description: EC2 instance administered through Systems Manager, without SSH.
+    Value: !Ref Instance
+  PublicIp:
+    Description: Elastic IPv4 address to allow as a /32 in Atlas before activation.
+    Value: !Ref PublicAddress
+  BundleBucketName:
+    Description: Private S3 bucket; upload the application at the BundleKey parameter.
+    Value: !Ref BundleBucket
+  HttpsUrl:
+    Description: Final application URL, available only after the separate TLS activation succeeds.
+    Value: !Sub 'https://${PublicAddress}/'

@@ -16,11 +16,20 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/api/ready', (req, res) => {
+  const connected = mongoose.connection.readyState === 1;
+  res.set('Cache-Control', 'no-store');
+  res.status(connected ? 200 : 503).json({ status: connected ? 'ready' : 'unavailable' });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/reservations', reservationRoutes);
 
 const frontend = path.resolve(__dirname, '../..');
 const angularFrontend = path.join(frontend, 'frontend', 'dist', 'frontend', 'browser');
+if (process.env.NODE_ENV === 'production' && !fs.existsSync(path.join(angularFrontend, 'index.html'))) {
+  throw new Error('Falta compilar Angular para producción. Ejecuta npm run build antes de desplegar.');
+}
 if (fs.existsSync(path.join(angularFrontend, 'index.html'))) {
   app.use(express.static(angularFrontend, { index: false }));
   for (const route of ['/', '/login', '/register', '/profile', '/reservations']) {

@@ -5,7 +5,8 @@
     "build": "npm --prefix frontend run build",
     "build:legacy": "tsc --project tsconfig.json",
     "check": "npm --prefix frontend run build",
-    "test": "npm run build && npm --prefix backend test && npm --prefix frontend test -- --watch=false"
+    "test": "npm run build && npm --prefix backend test && npm --prefix frontend test -- --watch=false",
+    "start": "npm --prefix backend start"
   },
   "devDependencies": {
     "typescript": "^7.0.2"
